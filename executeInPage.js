@@ -1,6 +1,6 @@
 //name:         executeInPage
 //description:  Executes a function in the page context, duplicating the function and provided objects into the page.
-//version:      1.0.0
+//version:      1.0.1
 
 //All of the utilities are placed under a single object. This is to pollute the global
 //  namespace as little as possible. For easier access, it's common for me to then use
@@ -96,14 +96,13 @@ makyenUtilities.executeInPage = function(functionToRunInPage, leaveInPage, id) {
         args.push(arguments[index]);
     }
     newScript.textContent = '(' + functionToRunInPage.toString() + ').apply(null,' +
-        convertToText(args) + ');';
+            convertToText(args) + ');';
     (document.head || document.documentElement).appendChild(newScript);
     if (!leaveInPage) {
         //Synchronous scripts are executed immediately and can be immediately removed.
         //Scripts with asynchronous functionality *may* need to remain in the page
         //  until complete. Exactly what's needed depends on actual usage.
-        document.head.removeChild(newScript);
+        newScript.parentNode.removeChild(newScript);
     }
     return newScript;
 };
-
