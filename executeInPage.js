@@ -1,6 +1,6 @@
 //name:         executeInPage
-//description:  Executes a function in the page context, duplicating the function and provided objects into the page.
-//version:      1.0.2
+//description:  Executes a function or code text in the page context, duplicating the function and provided objects into the page.
+//version:      1.1.0
 
 //  For easier access, it's common to use something like:
 //    const executeInPage = makyenUtilities.executeInPage;
@@ -21,19 +21,28 @@
     const maybeImplicitlyCreatedMakyenUtilities = makyenUtilities; // eslint-disable-line no-undef
     userscriptScope.makyenUtilities = Object.assign({}, maybeImplicitlyCreatedMakyenUtilities || {}, userscriptScope.makyenUtilities || {}, featuresObj);
 })(this, (function () {
-    function executeInPage(functionToRunInPage, leaveInPage, id) { // + additional arguments for toRunInPage (if a function)
+    function executeInPage(toRunInPage, leaveInPage, id) { // + additional arguments for toRunInPage (if a function)
         'use strict';
-        //Execute a function in the page context.
-        // Any additional arguments passed to this function are passed into the page to the
-        // functionToRunInPage.
-        // Such arguments must be Object, Array, functions, RegExp,
-        // Date, and/or other primitives (Boolean, null, undefined,
-        // Number, String, but not Symbol).  Circular references are
-        // not supported. Prototypes are not copied.
-        // Using () => doesn't set arguments, so can't use it to define this function.
-        // This has to be done without jQuery, as jQuery creates the script
-        // within this context, not the page context, which results in
-        // permission denied to run the function.
+        /* Execute code in the page context.
+         *  toRunInPage can be:
+         *    Function   If a Function, then any arguments beyond id are passed to
+         *                 that function in the page context.
+         *    String     If a String, then the text is placed verbatim in a <script>.
+         *
+         * When a Function is provided as toRunInPage, any additional arguments passed to this
+         * executeInPage are placed into the page and passed to the toRunInPage function.
+         *   Such arguments can be:
+         *     Object, Array, Function, RegExp, Date, and/or
+         *     other primitives (including Boolean, null, undefined,
+         *     Number, String, but not Symbol).
+         *   Circular references are not supported.
+         *   Prototypes are not copied.
+         *
+         * Using () => doesn't set arguments, so can't use it to define this function.
+         * This has to be done without jQuery, as jQuery creates the script
+         * within this context, not the page context, which results in
+         * permission denied to run the function.
+         */
         function convertToText(toTextArgs) {
             //This uses the fact that the arguments are converted to text which is
             //  interpreted within a <script>. That means we can create other types of
@@ -104,8 +113,12 @@
         for (let index = 3; index < arguments.length; index++) {
             args.push(arguments[index]);
         }
-        newScript.textContent = '(' + functionToRunInPage.toString() + ').apply(null,' +
+        if (typeof toRunInPage === 'function') {
+            newScript.textContent = '(' + toRunInPage.toString() + ').apply(null,' +
                 convertToText(args) + ');';
+        } else if (typeof toRunInPage === 'string') {
+            newScript.textContent = toRunInPage;
+        }
         (document.head || document.documentElement).appendChild(newScript);
         if (!leaveInPage) {
             //Synchronous scripts are executed immediately and can be immediately removed.
