@@ -1,25 +1,16 @@
 //name:         executeInPage
 //description:  Executes a function or code text in the page context, duplicating the function and provided objects into the page.
-//version:      1.1.0
+//version:      1.2.0
 
 //  For easier access, it's common to use something like:
 //    const executeInPage = makyenUtilities.executeInPage;
 
 /* globals makyenUtilities */
+
 (function (userscriptScope, featuresObj) {
     //All of the utilities are placed under a single object. This is to pollute the global
     //  namespace as little as possible.
-    //Old versions of some makyenUtilities used implict global creation.  At least in
-    //  Firefox using Tampermonkey, doing that leaks into the real window global.  From the
-    //  point of view of the makyenUtilities, that can result in different versions of the
-    //  utilities being leaked from one userscript or another and/or masking the implicitly
-    //  created makyenUtilities Object once another is created in the current global scope.
-    //  This was resolved by explicitly finding the userscriptScope, but we accomodate
-    //  potential older versions of some scripts by incorporating whatever exists in the
-    //  actual global scope into the makyenUtilities in the userscriptScope while overwriting
-    //  any properties we're modifying/creating in this script.
-    const maybeImplicitlyCreatedMakyenUtilities = makyenUtilities; // eslint-disable-line no-undef
-    userscriptScope.makyenUtilities = Object.assign({}, maybeImplicitlyCreatedMakyenUtilities || {}, userscriptScope.makyenUtilities || {}, featuresObj);
+    userscriptScope.makyenUtilities = Object.assign({}, userscriptScope.makyenUtilities || {}, featuresObj);
 })(this, (function () {
     function executeInPage(toRunInPage, leaveInPage, id) { // + additional arguments for toRunInPage (if a function)
         'use strict';
@@ -129,5 +120,6 @@
         return newScript;
     }
 
+    executeInPage.version = '1.2.0';
     return {executeInPage};
 })());
